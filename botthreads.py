@@ -35,6 +35,7 @@ def login(page):
 
     print("✅ Logged in")
 
+
 def normalize_likes(raw):
     if not raw:
         return 0
@@ -55,6 +56,8 @@ def normalize_likes(raw):
         pass
 
     return 0
+
+
 def parse_feed(page, keyword, mode="top", limit=10):
 
     if mode == "top":
@@ -125,6 +128,8 @@ def parse_feed(page, keyword, mode="top", limit=10):
         time.sleep(random.uniform(1.5, 2.5))
 
     return collected
+
+
 def parse_account_posts(page, account, limit=10):
 
     url = f"https://www.threads.net/@{account}"
@@ -178,7 +183,6 @@ def parse_account_posts(page, account, limit=10):
                     "text": text.strip(),
                     "likes": likes,
                     "likes_raw": raw_likes
-
                 })
 
                 if len(collected) >= limit:
@@ -191,10 +195,28 @@ def parse_account_posts(page, account, limit=10):
         time.sleep(random.uniform(1.5, 2.5))
 
     return collected
+
+
 def save_to_json(posts, filename):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(posts, f, ensure_ascii=False, indent=2)
-    print(f"✅ Saved {len(posts)} posts to {filename}")
+
+    print(f"✅ Saved {len(posts)} posts → {filename}")
+
+
+def process_posts(input_file, output_file, min_likes):
+    with open(input_file, "r", encoding="utf-8") as f:
+        posts = json.load(f)
+
+    filtered = [p for p in posts if p["likes"] >= min_likes]
+    filtered = sorted(filtered, key=lambda x: x["likes"], reverse=True)
+
+    result = [{"text": p["text"]} for p in filtered]
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
+    print(f"✅ {input_file} → {len(result)} posts → {output_file}")
 
 def run():
     top_posts_all = []
@@ -211,10 +233,10 @@ def run():
             if TOP_POSTS > 0:
                 top_posts = parse_feed(page, keyword, mode="top", limit=TOP_POSTS)
                 top_posts_all.extend(top_posts)
+
             if NEW_POSTS > 0:
                 new_posts = parse_feed(page, keyword, mode="new", limit=NEW_POSTS)
                 new_posts_all.extend(new_posts)
-
 
         if ACC_POSTS > 0:
             for account in ACCOUNTS:
@@ -223,14 +245,46 @@ def run():
 
         browser.close()
 
-
     if top_posts_all:
         save_to_json(top_posts_all, "top_posts.json")
+
     if new_posts_all:
         save_to_json(new_posts_all, "new_posts.json")
+
     if acc_posts_all:
         save_to_json(acc_posts_all, "account_posts.json")
 
 
+def save_all_clean_posts_to_txt():
+    all_posts = []
+
+    files = [
+        ("top_posts.json", 1000),  #set a limit on the number of likes required to save a post
+        ("new_posts.json", 100),
+        ("account_posts.json", 200)
+    ]
+
+    for file, min_likes in files:
+        try:
+            with open(file, "r", encoding="utf-8") as f:
+                posts = json.load(f)
+
+            filtered = [p for p in posts if p["likes"] >= min_likes]
+            filtered = sorted(filtered, key=lambda x: x["likes"], reverse=True)
+
+            all_posts.extend([p["text"] for p in filtered])
+
+        except FileNotFoundError:
+            continue
+
+
+    with open("all_clean_posts.txt", "w", encoding="utf-8") as f:
+        for i, post in enumerate(all_posts, 1):
+            f.write(f"{i}. {post}\n\n")
+
+    print(f"✅ Saved {len(all_posts)} posts → all_clean_posts.txt")
+
+
 if __name__ == "__main__":
     run()
+    save_all_clean_posts_to_txt()
