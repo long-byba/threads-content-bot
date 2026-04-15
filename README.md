@@ -3,18 +3,24 @@ A Python scraper for Threads that discovers trending posts, collects real-time u
 
 
 A Python scraper for collecting and analyzing high-performing content from Threads.
+
 🚀 What it does
 
 - Finds trending posts by keywords
 - Collects recent posts in real-time
 - Scrapes posts from specific accounts
 - Extracts engagement data (likes, timestamps)
+- Normalizes likes (e.g. 2k, 1 тис. → numbers)
+- Filters out low-performing posts
+- Sorts content by engagement
+- Generates clean datasets (JSON + TXT) ready for reuse
 
 🧠 Use cases
 
 - Content research
 - Trend discovery
 - Idea generation for social media
+- Building AI content pipelines
 
 🛠 Built with
 
@@ -23,14 +29,16 @@ A Python scraper for collecting and analyzing high-performing content from Threa
 
  📊 Output
 
-Structured JSON files ready for further processing or AI pipelines.
+- top_posts.json — trending posts
+- new_posts.json — recent posts
+- account_posts.json — posts from specific accounts
+- all_clean_posts.txt — filtered high-quality content
 
 🔥 Roadmap
 
-- Content filtering (by likes, recency)
 - AI rewriting for viral posts
 - Full automation pipeline
 
 ⚠️ Disclaimer
 
-For educational purposes only.
+For educational purposes only
